@@ -15,10 +15,10 @@ Create Engine
 .. code-block:: python
     
     import cityflow
-    eng = cityflow.Engine(config_path, thread_num=1)
+    eng = cityflow.Engine(config_file, thread_num=1)
 
 
-- ``config_path``: path for config file.
+- ``config_file``: path for config file.
 - ``thread_num``: number of threads.
 
 Arguments In Config File
