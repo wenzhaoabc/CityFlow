@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.18)
 project(cityflow)
 
 set(CMAKE_CXX_STANDARD "11" CACHE STRING "")
@@ -18,7 +18,6 @@ endif(NOT CMAKE_BUILD_TYPE)
 include_directories(extern/milo)
 
 set(REQUIRED_SUBMODULES
-    "extern/pybind11/CMakeLists.txt"
     "extern/rapidjson/include"
 )
 
@@ -52,7 +51,12 @@ foreach(REQUIRED_SUBMODULE ${REQUIRED_SUBMODULES})
     endif()
 endforeach()
 
-add_subdirectory(extern/pybind11)
+# Use a current, separately installed pybind11 rather than the old vendored copy.
+# PYBIND11_FINDPYTHON selects pybind11's modern FindPython integration, which is
+# required for reliable Python 3.12 extension discovery.
+set(PYBIND11_FINDPYTHON ON)
+find_package(Python 3.8 REQUIRED COMPONENTS Interpreter Development.Module)
+find_package(pybind11 2.12 CONFIG REQUIRED)
 include_directories(extern/rapidjson/include)
 
 add_subdirectory(src)
@@ -73,4 +77,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB_NAME})
 if(VERSION)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DVERSION=${VERSION})
 endif()
-

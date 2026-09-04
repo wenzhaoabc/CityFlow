@@ -1,0 +1,42 @@
+name: Build Python wheel
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux-wheel:
+    name: Python 3.12 Linux wheel
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: pypa/cibuildwheel@v2.23.1
+        env:
+          CIBW_BUILD: cp312-manylinux_x86_64
+          CIBW_BUILD_VERBOSITY: 1
+          CIBW_TEST_COMMAND: >-
+            cd {project} &&
+            python -m unittest discover -v -s tests/python
+
+      - name: Store wheel in GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: cityflow-python312-linux-wheel
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish tagged wheel as a GitHub Release package
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: wheelhouse/*.whl
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

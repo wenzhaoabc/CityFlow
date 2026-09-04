@@ -46,6 +46,21 @@ Links
 - `Documentation and Quick Start <https://cityflow.readthedocs.io/en/latest/>`_
 - `Docker <https://hub.docker.com/r/cityflowproject/cityflow>`_
 
+Python 3.12 wheels
+------------------
+
+Every update to the repository builds and tests a Linux CPython 3.12 wheel.
+The wheel can be downloaded from the ``cityflow-python312-linux-wheel``
+artifact on the corresponding GitHub Actions run. Version tags beginning with
+``v`` also publish the wheel on the repository's GitHub Releases page, where it
+can be installed directly with ``pip install <wheel-url>``.
+
+To build locally, initialize the RapidJSON submodule and use pip. The isolated
+build environment installs a Python-3.12-compatible pybind11 automatically::
+
+    git submodule update --init --recursive
+    python -m pip install .
+
 
 .. [#sumo] `SUMO home page <https://sumo.dlr.de/index.html>`_
 .. [#tianrang] `Tianrang Intelligence home page <https://www.tianrang.com/>`_
