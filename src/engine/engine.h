@@ -6,6 +6,7 @@
 #include "engine/archive.h"
 #include "utility/barrier.h"
 
+#include <atomic>
 #include <mutex>
 #include <thread>
 #include <set>
@@ -47,7 +48,7 @@ namespace CityFlow {
         std::mutex lock;
         Barrier startBarrier, endBarrier;
         std::vector<std::thread> threadPool;
-        bool finished = false;
+        std::atomic<bool> finished{false};
         std::string dir;
         std::ofstream logOut;
 

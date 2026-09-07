@@ -254,7 +254,7 @@ namespace CityFlow {
                                   std::vector<Road *> &roads,
                                   std::vector<Intersection *> &intersections,
                                   std::vector<Drivable *> &drivables) {
-        while (!finished) {
+        while (!finished.load(std::memory_order_acquire)) {
             threadPlanRoute(roads);
             if (laneChange) {
                 threadInitSegments(roads);
@@ -761,9 +761,12 @@ namespace CityFlow {
 
     Engine::~Engine() {
         logOut.close();
-        finished = true;
-        for (int i = 0; i < (laneChange ? 9 : 6); ++i) {
+        const int phases = laneChange ? 9 : 6;
+        for (int i = 0; i < phases; ++i) {
             startBarrier.wait();
+            if (i == phases - 1) {
+                finished.store(true, std::memory_order_release);
+            }
             endBarrier.wait();
         }
         for (auto &thread : threadPool) thread.join();
