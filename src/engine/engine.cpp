@@ -177,7 +177,7 @@ namespace CityFlow {
                 result = false;
             }
             if (lane->getMaxSpeed() > 30) {
-                std::cerr << "Deprecated road max speed, recommended road max speed at most 30 meters/s" << std::endl;
+                std::cerr << "Deprecated road max speed, recommended max speed at most 30 meters/s" << std::endl;
                 result = false;
             }
         }
@@ -619,7 +619,7 @@ namespace CityFlow {
     std::vector<std::string> Engine::getVehicles(bool includeWaiting) const {
         std::vector<std::string> ret;
         ret.reserve(activeVehicleCount);
-        for (const Vehicle* vehicle: getRunningVehicles(includeWaiting)) {
+        for (const Vehicle* vehicle : getRunningVehicles(includeWaiting)) {
             ret.emplace_back(vehicle->getId());
         }
         return ret;
@@ -661,7 +661,7 @@ namespace CityFlow {
 
     std::map<std::string, double> Engine::getVehicleSpeed() const {
         std::map<std::string, double> ret;
-        for (const Vehicle* vehicle: getRunningVehicles()) {
+        for (const Vehicle* vehicle : getRunningVehicles()) {
             ret.emplace(vehicle->getId(), vehicle->getSpeed());
         }
         return ret;
@@ -669,7 +669,7 @@ namespace CityFlow {
 
     std::map<std::string, double> Engine::getVehicleDistance() const {
         std::map<std::string, double> ret;
-        for (const Vehicle* vehicle: getRunningVehicles()) {
+        for (const Vehicle* vehicle : getRunningVehicles()) {
             ret.emplace(vehicle->getId(), vehicle->getDistance());
         }
         return ret;
@@ -831,7 +831,7 @@ namespace CityFlow {
         auto iter = vehicleMap.find(id);
         if (iter == vehicleMap.end()) {
             throw std::runtime_error("Vehicle '" + id + "' not found");
-        }else{
+        }else {
             iter->second->setCustomSpeed(speed);
         }
     }
@@ -840,7 +840,7 @@ namespace CityFlow {
         auto iter = vehicleMap.find(vehicleId);
         if (iter == vehicleMap.end()) {
             throw std::runtime_error("Vehicle '" + vehicleId + "' not found");
-        }else{
+        }else {
             Vehicle *vehicle = iter->second;
             if (laneChange) {
                 if (!vehicle->isReal())
@@ -872,7 +872,7 @@ namespace CityFlow {
         auto iter = vehicleMap.find(id);
         if (iter == vehicleMap.end()) {
             throw std::runtime_error("Vehicle '" + id + "' not found");
-        }else{
+        }else {
             Vehicle *vehicle = iter->second;
             return vehicle->getInfo();
         }
