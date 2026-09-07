@@ -2,6 +2,10 @@ name: Build Python wheel
 
 on:
   push:
+    branches:
+      - master
+    tags:
+      - "v*"
   pull_request:
   workflow_dispatch:
 
@@ -9,8 +13,6 @@ jobs:
   linux-wheel:
     name: Python 3.12 Linux wheel
     runs-on: ubuntu-24.04
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,15 +33,6 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-      - name: Publish tagged wheel as a GitHub Release package
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: wheelhouse/*.whl
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   python-tests:
     name: Python 3.12 regression tests
     runs-on: ubuntu-24.04
@@ -58,3 +51,58 @@ jobs:
 
       - name: Run Python tests
         run: python -m unittest discover -v -s tests/python
+
+  release-wheel:
+    name: Publish Python 3.12 wheel release
+    needs:
+      - linux-wheel
+      - python-tests
+    if: >-
+      github.event_name != 'pull_request' &&
+      (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download built wheel
+        uses: actions/download-artifact@v4
+        with:
+          name: cityflow-python312-linux-wheel
+          path: wheelhouse
+
+      - name: Update rolling Python 3.12 tag
+        if: github.ref == 'refs/heads/master'
+        run: |
+          git tag -f python312-latest "$GITHUB_SHA"
+          git push origin refs/tags/python312-latest --force
+
+      - name: Publish rolling Python 3.12 wheel release
+        if: github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: python312-latest
+          name: CityFlow Python 3.12 Linux wheel (latest)
+          body: |
+            Rolling CPython 3.12 Linux wheel built from the latest tested `master` commit.
+
+            Source commit: `${{ github.sha }}`
+
+            Install by downloading the `.whl` asset below and running:
+            `pip install <downloaded-wheel.whl>`
+          files: wheelhouse/*.whl
+          overwrite_files: true
+          fail_on_unmatched_files: true
+          make_latest: true
+
+      - name: Publish versioned wheel release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: wheelhouse/*.whl
+          overwrite_files: true
+          fail_on_unmatched_files: true
+          generate_release_notes: true
