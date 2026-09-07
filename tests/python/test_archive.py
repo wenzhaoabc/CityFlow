@@ -1,3 +1,5 @@
+import os
+import tempfile
 import unittest
 import cityflow
 import time
@@ -95,25 +97,31 @@ class TestArchive(unittest.TestCase):
     def test_save_to_file(self):
         """ Disk IO test """
         engine = cityflow.Engine(config_file=self.config_file, thread_num=4)
-        self.run_steps(engine, self.period)
-        engine.snapshot().dump("save.json")
-        self.run_steps(engine, self.period)
-        record = self.get_record(engine)
-        engine.load_from_file("save.json")
-        self.run_and_check(engine, record)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            save_path = os.path.join(temp_dir, "save.json")
+            self.run_steps(engine, self.period)
+            engine.snapshot().dump(save_path)
+            self.assertGreater(os.path.getsize(save_path), 0)
+            self.run_steps(engine, self.period)
+            record = self.get_record(engine)
+            engine.load_from_file(save_path)
+            self.run_and_check(engine, record)
         del engine
 
     def test_multi_save_to_file(self):
         """ Disk IO test 2"""
         engine = cityflow.Engine(config_file=self.config_file, thread_num=4)
-        for i in range(2):
-            self.run_steps(engine, self.period)
-            engine.snapshot().dump("save.json")
-            self.run_steps(engine, self.period)
-            record = self.get_record(engine)
-            for j in range(2):
-                engine.load_from_file("save.json")
-                self.run_and_check(engine, record)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            save_path = os.path.join(temp_dir, "save.json")
+            for i in range(2):
+                self.run_steps(engine, self.period)
+                engine.snapshot().dump(save_path)
+                self.assertGreater(os.path.getsize(save_path), 0)
+                self.run_steps(engine, self.period)
+                record = self.get_record(engine)
+                for j in range(2):
+                    engine.load_from_file(save_path)
+                    self.run_and_check(engine, record)
 
         del engine
 
