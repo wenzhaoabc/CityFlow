@@ -106,8 +106,8 @@ namespace CityFlow {
             std::cerr << "Json parsing error at line " << csw.GetLine() << std::endl;
             std::cerr << rapidjson::GetParseError_En(document.GetParseError());
             std::cerr << std::endl;
+            fclose(fp);
             throw JsonFormatError("Json parsing error");
-            return false;
         }
         fclose(fp);
         return true;
@@ -121,9 +121,11 @@ namespace CityFlow {
         char writeBuffer[JSON_BUFFER_SIZE];
         rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
         rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
-        document.Accept(writer);
-        fclose(fp);
-        return true;
+        const bool accepted = document.Accept(writer);
+        os.Flush();
+        const bool streamOk = !ferror(fp);
+        const int closeResult = fclose(fp);
+        return accepted && streamOk && closeResult == 0;
     }
 
     const rapidjson::Value &getJsonMemberValue(const std::string &name, const rapidjson::Value &object) {
