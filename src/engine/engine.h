@@ -139,7 +139,7 @@ namespace CityFlow {
 
         // RL related api
 
-        void pushVehicle(const std::map<std::string, double> &info, const std::vector<std::string>& roads);
+        void pushVehicle(const std::map<std::string, double> &info, const std::vector<std::string> &roads);
 
         size_t getVehicleCount() const;
 
